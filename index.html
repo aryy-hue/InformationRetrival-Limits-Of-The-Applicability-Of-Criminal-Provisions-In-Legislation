@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Documents</title>
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Container Styling */
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #007BFF;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .result {
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .result:hover {
+            background-color: #e6f7ff;
+        }
+
+        .document {
+            font-weight: bold;
+            font-size: 18px;
+            color: #007BFF;
+        }
+
+        .similarity {
+            color: #555;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .snippet {
+            color: #333;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .open-document {
+            color: #007BFF;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
+            text-decoration: none;
+        }
+
+        .open-document:hover {
+            text-decoration: underline;
+        }
+
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .pagination span {
+            display: inline-block;
+            margin: 0 5px;
+            padding: 10px 15px;
+            border: 1px solid #007BFF;
+            border-radius: 50%;
+            color: #007BFF;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .pagination .active {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #007BFF;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+        }
+
+        /* Responsive Styling */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search Documents</h1>
+        <textarea id="query" placeholder="Enter your search query..."></textarea>
+        <button onclick="searchDocuments()">Search</button>
+        <button onclick="resetSearch()">Reset</button>
+
+        <div id="error-message" class="error-message"></div>
+
+        <div class="results" id="results"></div>
+
+        <div id="pagination" class="pagination"></div>
+    </div>
+
+    <script>
+        let allResults = [];
+        let currentPage = 1;
+        const resultsPerPage = 5;
+
+        async function searchDocuments() {
+            const query = document.getElementById('query').value.trim();
+            const resultsDiv = document.getElementById('results');
+            const paginationDiv = document.getElementById('pagination');
+            const errorMessage = document.getElementById('error-message');
+
+            if (!query) {
+                errorMessage.innerHTML = 'Please enter a search query.';
+                resultsDiv.innerHTML = '';
+                paginationDiv.innerHTML = '';
+                return;
+            } else {
+                errorMessage.innerHTML = '';
+            }
+
+            resultsDiv.innerHTML = '<div class="spinner"></div>';
+            paginationDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('http://192.168.0.104:5000/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch results');
+                }
+
+                const results = await response.json();
+                allResults = results;
+
+                if (results.length === 0) {
+                    resultsDiv.innerHTML = '<p>No results found.</p>';
+                } else {
+                    renderResults(paginateResults(results, currentPage));
+                    renderPagination(results.length);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultsDiv.innerHTML = `<p class="error-message">Error: ${error.message}</p>`;
+            }
+        }
+
+        function renderResults(results) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            results.forEach(result => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result';
+                resultDiv.innerHTML = `
+                    <p class="document">${result.document}</p>
+                    <p class="similarity">Similarity: ${result.similarity.toFixed(4)}</p>
+                    <p class="snippet">${result.snippet.slice(0, 200)}${result.snippet.length > 200 ? '... <span class="read-more" onclick="expandSnippet(this, \'' + result.snippet + '\')">Read more</span>' : ''}</p>
+                    <p><span class="open-document" onclick="openDocument('${result.document}')">Open Document</span></p>
+                    <div class="open-document-result" id="document-${result.document}"></div>
+                `;
+                resultsDiv.appendChild(resultDiv);
+            });
+        }
+
+        function paginateResults(results, page = 1) {
+            const start = (page - 1) * resultsPerPage;
+            const end = start + resultsPerPage;
+            return results.slice(start, end);
+        }
+
+        function renderPagination(totalResults) {
+            const totalPages = Math.ceil(totalResults / resultsPerPage);
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLink = document.createElement('span');
+                pageLink.innerText = i;
+                pageLink.className = currentPage === i ? 'active' : '';
+                pageLink.onclick = () => {
+                    currentPage = i;
+                    const paginatedResults = paginateResults(allResults, i);
+                    renderResults(paginatedResults);
+                    renderPagination(totalResults);
+                };
+                paginationDiv.appendChild(pageLink);
+            }
+        }
+
+        function resetSearch() {
+            document.getElementById('query').value = '';
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('pagination').innerHTML = '';
+            allResults = [];
+            currentPage = 1;
+        }
+
+        async function openDocument(docName) {
+            const documentDiv = document.getElementById(`document-${docName}`);
+
+            if (documentDiv.dataset.loaded) {
+                return; // Document already loaded, ignore
+            }
+
+            documentDiv.innerHTML = '<p>Loading document...</p>';
+
+            try {
+                const response = await fetch(`http://192.168.0.104:5000/get_pdf/${docName}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch document');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                documentDiv.innerHTML = `
+                    <a href="${url}" target="_blank">Download and View Document</a>
+                `;
+                documentDiv.dataset.loaded = true;
+            } catch (error) {
+                documentDiv.innerHTML = `<p class="error-message">Error: ${error.message}</p>`;
+            }
+        }
+
+        function expandSnippet(element, fullSnippet) {
+            element.parentNode.innerHTML = fullSnippet;
+        }
+    </script>
+</body>
+</html>
