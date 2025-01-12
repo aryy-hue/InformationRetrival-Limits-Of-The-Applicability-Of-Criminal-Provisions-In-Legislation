@@ -3,181 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Documents</title>
+    <title>Modern Search Documents</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* General Body Styling */
+        /* General Styling */
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f7f9fc;
-            color: #333;
+            font-family: 'Inter', sans-serif;
+            background-color: #F5EFFF;
+            color: #2c3e50;
             margin: 0;
             padding: 0;
         }
 
         /* Container Styling */
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 50px auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(145deg, #ffffff, #f7f9fc);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 1s ease-out;
         }
 
         h1 {
             text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            color: #007BFF;
+            font-size: 2.5rem;
+            color: #6c63ff;
+            margin-bottom: 30px;
+            text-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            animation: slideDown 1s ease-out;
         }
 
+        /* Textarea Styling */
         textarea {
             width: 100%;
-            height: 120px;
+            height: 140px;
             padding: 15px;
             font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            border: 1px solid #d1dce8;
+            border-radius: 12px;
             box-sizing: border-box;
             margin-bottom: 20px;
-            transition: border-color 0.3s ease;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: #fcfcfe;
+            animation: scaleIn 0.8s ease-out;
         }
 
         textarea:focus {
-            border-color: #007BFF;
+            border-color: #58cced;
             outline: none;
+            box-shadow: 0 0 12px rgba(88, 204, 237, 0.5);
         }
 
+        /* Button Styling */
         button {
             width: 100%;
             padding: 15px;
-            background-color: #007BFF;
+            background: linear-gradient(145deg, #6c63ff, #7f72ff);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 18px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease, transform 0.3s ease;
             margin-bottom: 10px;
         }
 
         button:hover {
-            background-color: #0056b3;
+            background: linear-gradient(145deg, #7f72ff, #58cced);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
+        /* Results Container */
         .results {
             margin-top: 20px;
+            opacity: 0;
+            animation: fadeInResults 1.2s ease-out forwards;
         }
 
         .result {
-            padding: 15px;
+            padding: 20px;
             margin-bottom: 15px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
+            background-color: #f0faff;
+            border-radius: 12px;
+            border: 1px solid #e2ecf7;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .result:hover {
-            background-color: #e6f7ff;
+            background-color: #eaf9ff;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
         }
 
         .document {
-            font-weight: bold;
-            font-size: 18px;
-            color: #007BFF;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #6c63ff;
+            margin-bottom: 5px;
         }
 
-        .similarity {
-            color: #555;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-
+        .similarity,
         .snippet {
-            color: #333;
-            font-size: 14px;
-            margin-top: 10px;
+            color: #4a5568;
+            font-size: 0.95rem;
         }
 
         .open-document {
-            color: #007BFF;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            display: block;
+            color: #58cced;
+            font-weight: 500;
             text-decoration: none;
+            margin-top: 10px;
+            display: inline-block;
+            transition: color 0.3s ease;
         }
 
         .open-document:hover {
+            color: #45a1cf;
             text-decoration: underline;
         }
 
+        /* Pagination Styling */
         .pagination {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 30px;
         }
 
         .pagination span {
             display: inline-block;
             margin: 0 5px;
             padding: 10px 15px;
-            border: 1px solid #007BFF;
-            border-radius: 50%;
-            color: #007BFF;
+            border: 1px solid #6c63ff;
+            border-radius: 8px;
+            color: #6c63ff;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .pagination .active {
-            background-color: #007BFF;
+            background-color: #6c63ff;
             color: white;
         }
 
+        .pagination span:hover {
+            background-color: #58cced;
+            color: white;
+        }
+
+        /* Error Styling */
+        .error-message {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* Spinner Animation */
         .spinner {
             display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(0, 0, 0, 0.1);
+            width: 30px;
+            height: 30px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
-            border-top-color: #007BFF;
+            border-top-color: #58cced;
             animation: spin 1s linear infinite;
+            margin: 20px auto;
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
-        .error-message {
-            color: red;
-            font-weight: bold;
+        /* Keyframe Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeInResults {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Responsive Styling */
         @media (max-width: 768px) {
-            .container {
-                padding: 20px;
+            h1 {
+                font-size: 2rem;
             }
 
-            h1 {
-                font-size: 2em;
+            button {
+                font-size: 16px;
             }
         }
-
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Search Documents</h1>
-        <textarea id="query" placeholder="Enter your search query..."></textarea>
+        <textarea id="query" placeholder="Type your search query here..."></textarea>
         <button onclick="searchDocuments()">Search</button>
         <button onclick="resetSearch()">Reset</button>
 
         <div id="error-message" class="error-message"></div>
-
         <div class="results" id="results"></div>
-
         <div id="pagination" class="pagination"></div>
     </div>
 
@@ -205,7 +273,7 @@
             paginationDiv.innerHTML = '';
 
             try {
-                const response = await fetch('http://192.168.0.104:5000/search', {
+                const response = await fetch('https://sirwika11.pythonanywhere.com//search', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -293,7 +361,7 @@
             documentDiv.innerHTML = '<p>Loading document...</p>';
 
             try {
-                const response = await fetch(`http://192.168.0.104:5000/get_pdf/${docName}`);
+                const response = await fetch(`https://sirwika11.pythonanywhere.com/get_pdf/${docName}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch document');
                 }
