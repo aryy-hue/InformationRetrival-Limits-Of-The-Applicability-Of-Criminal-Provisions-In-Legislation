@@ -246,7 +246,7 @@
           <h3>${result.document}</h3>
           <p class="similarity">Similarity: <span>${result.similarity.toFixed(4)}</span></p>
           <p class="snippet">${result.snippet.slice(0, 200)}${result.snippet.length > 200 ? '... <span class="read-more" onclick="expandSnippet(this, \'' + result.snippet + '\'</span>' : ''}</p>
-          <p><span class="open-document" onclick="openDocument('${result.document}Open Document</span></p>
+          <p><span class="open-document" onclick="openDocument('${result.document}')">Open Document</span></p>
           <div class="open-document-result" id="document-${result.document}"></div>
         `;
         resultsDiv.appendChild(resultDiv);
